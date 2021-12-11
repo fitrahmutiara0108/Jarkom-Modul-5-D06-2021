@@ -6,6 +6,15 @@ Anggota :
 - Dewi Mardani 05111940000225
 
 ## Setting Topologi
+Tugas pertama kalian yaitu membuat topologi jaringan dengan keterangan sebagai berikut:
+
+- Doriki adalah DNS Server
+- Jipangu adalah DHCP Server
+- Maingate dan Jorge adalah Web Server
+- Jumlah Host pada Blueno adalah 100 host
+- Jumlah Host pada Cipher adalah 700 host
+- Jumlah Host pada Elena adalah 300 host
+- Jumlah Host pada Fukurou adalah 200 host
 - Pertama buat topologi seperti berikut:
 
 ![image](https://user-images.githubusercontent.com/58657135/145675204-1d0603f5-ce81-46e2-8877-027223838691.png)
@@ -161,6 +170,7 @@ Test dengan `ping google.com`
 iptables -A FORWARD -d 10.24.8.3 -p tcp --dport 80 -j REJECT
 iptables -A FORWARD -d 10.24.8.2 -p tcp --dport 80 -j REJECT
 ```
+
 ### Test Jipangu
 Test dengan `nmap -p 80 10.24.8.3`
 
