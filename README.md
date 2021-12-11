@@ -260,3 +260,19 @@ Test dengan ping ke Doriki `ping 10.24.8.2`
 
 
 ## 6. Karena kita memiliki 2 Web Server, Luffy ingin Guanhao disetting sehingga setiap request dari client yang mengakses DNS Server akan didistribusikan secara bergantian pada Jorge dan Maingate
+Pada Guanhao:
+```
+iptables -t nat -A PREROUTING -p tcp -d 10.24.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 10.24.36.2
+iptables -t nat -A PREROUTING -p tcp -d 10.24.8.2 -j DNAT --to-destination 10.24.36.3
+
+iptables -t nat -A POSTROUTING -p tcp -d 10.24.36.2 -j SNAT --to-source 10.24.8.2
+iptables -t nat -A POSTROUTING -p tcp -d 10.24.36.3 -j SNAT --to-source 10.24.8.2
+```
+
+install web server pada Jorge dan Maingate, Lalu isi `/var/www/html/index.html` dengan nama masing-masing server (ex: Server Jorger diisi Jorge dst)
+
+Test pada salah satu klien ednagn curl ke IP DNS:
+
+![image](https://user-images.githubusercontent.com/58657135/145676585-4d713611-2fae-4240-8fef-5fe73c5b0b30.png)
+
+
