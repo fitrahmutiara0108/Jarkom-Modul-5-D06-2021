@@ -159,6 +159,14 @@ route add -net 10.24.0.0 netmask 255.255.224.0 gw 10.24.16.2
 ## 1. Agar topologi yang kalian buat dapat mengakses keluar, kalian diminta untuk mengkonfigurasi Foosha menggunakan iptables, tetapi Luffy tidak ingin menggunakan MASQUERADE.
 ### Pada Foosha
 `iptables -t nat -A POSTROUTING -s 10.24.0.0/18 -o eth0 -j SNAT --to-source 10.24.8.3`
+
+Penjelasan :
+- t nat: Menggunakan tabel NAT karena akan mengubah alamat asal dari paket
+- A POSTROUTING: Menggunakan chain POSTROUTING karena mengubah asal paket setelah routing
+- s 10.24.0.0/18: Alamat asal dari paket yaitu semua alamat IP dari subnet 10.24.0.0/18
+- o eth0: Paket yang keluar dari eth0 MASQUERADE
+- j SNAT: Target SNAT digunakan untuk mengubah source atau alamat asal dari paket
+- to-source 10.24.8.3: Mendefinisikan IP source pengganti, di mana digunakan eth0 MASQUERADE
 ### Pada Water7
 Test dengan `ping google.com`
 
@@ -171,6 +179,12 @@ iptables -A FORWARD -d 10.24.8.3 -p tcp --dport 80 -j REJECT
 iptables -A FORWARD -d 10.24.8.2 -p tcp --dport 80 -j REJECT
 ```
 
+Penjelasan :
+- A FORWARD : Menggunakan chain FORWARD karena kita akan melakukan filter terhadap paket yang melewati Water7
+- d 10.24.8.3 dan -d 10.24.8.2 : Alamat tujuan paket
+- p tcp : Protokol yang digunakan, yaitu tcp
+- dport 80 : Port yang digunakan 
+- j REJECT : Paket ditolak
 ### Test Jipangu
 Test dengan `nmap -p 80 10.24.8.3`
 
@@ -187,6 +201,13 @@ Jika state http pada IP tersebut sudah berstatus `filtered` maka sudah berhasil.
 ### Pada Jipangu dan Doriki
 `iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP`
 
+Penjelasan :
+- A INPUT : Menggunakan chain INPUT karena dikonfigurasikan langsung
+- p icmp : Protokol yang digunakan, yaitu icmp (ping)
+- m connlimit : Menggunakan rule connection limit
+- connlimit-above 3 : Limit yang ditangkap paket adalah di atas 3
+- connlimit-mask 0 : Hanya memperbolehkan 3 koneksi setiap subnet dalam satu waktu
+- j DROP : Drop paket
 Di test pada 3 node untuk ping Doriki/Jipangu. Dikatakan berhasil jika saat lebih dari 3, maka ping akan stuck:
 
 1.
@@ -217,6 +238,16 @@ iptables -A INPUT -s 10.24.0.0/22 -j REJECT
 iptables -A INPUT -s 10.24.4.0/25 -m time --timestart 07:00 --timestop 15:00 --weekdays Mon,Tue,Wed,Thu -j ACCEPT
 iptables -A INPUT -s 10.24.4.0/25 -j REJECT
 ```
+Penjelasan :
+- A INPUT : Menggunakan chain INPUT karena langsung dikonfigurasi pada Doriki
+- s 10.24.0.0/22 dan -s 10.24.0.0/25: Alamat asal paket
+- m time : Menggunakan rule time
+- timestart 07:00 : Waktu mulai
+- timestop 15:00 : Waktu berakhir
+- weekdays Mon,Tue,Wed,Thu : Hari
+- j ACCEPT : Paket diterima
+- j REJECT : Paket ditolak.
+
 ### Pada Blueno
 Test dengan ping ke Doriki `ping 10.24.8.2`
 `date -s "6 DEC 2021 08:00:00"`:
@@ -248,6 +279,13 @@ iptables -A INPUT -s 10.24.34.0/24 -m time --timestart 00:00 --timestop 06:59 -j
 iptables -A INPUT -s 10.24.32.0/23 -j REJECT
 iptables -A INPUT -s 10.24.34.0/24 -j REJECT
 ```
+Penjelasan :
+- A INPUT : Menggunakan chain INPUT karena langsung dikonfigurasi pada Doriki
+- s  10.24.32.0/23 dan -A INPUT -s  10.24.32.0/24 : Alamat asal paket
+- -timestart 15:01 Waktu mulai dengan waktu berakhir --timestop 23:59
+- -timestart 00:00 Waktu mulai dengan waktu berakhir --timestop 06:59
+- j ACCEPT : Paket diterima
+- j REJECT : Paket ditolak.
 ### Pada Elena
 Test dengan ping ke Doriki `ping 10.24.8.2`
 `date -s "6 DEC 2021 08:00:00"`:
